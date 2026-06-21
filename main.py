@@ -81,6 +81,7 @@ def go(config: DictConfig):
         if "data_split" in active_steps:
             _ = mlflow.run(
                 f"{config['main']['components_repository']}/train_val_test_split",'main',
+                env_manager="conda",
                 parameters = {
                         "input": "clean_sample.csv:latest",
                         "test_size": config["modeling"]["test_size"],
@@ -101,7 +102,7 @@ def go(config: DictConfig):
             _ = mlflow.run(
                 os.path.join("src", "train_random_forest"),
                 "main",
-                env_manager="local",
+                env_manager="conda",
                 parameters={
                     "trainval_artifact": "trainval_data.csv:latest",
                     "val_size": config["modeling"]["val_size"],
@@ -115,11 +116,15 @@ def go(config: DictConfig):
 
         if "test_regression_model" in active_steps:
 
-            ##################
-            # Implement here #
-            ##################
-
-            pass
+            _ = mlflow.run(
+                f"{config['main']['components_repository']}/test_regression_model",
+                "main",
+                env_manager="conda",
+                parameters={
+                    "mlflow_model": "random_forest_export:prod",
+                    "test_dataset": "test_data.csv:latest"
+                },
+            )
 
 
 if __name__ == "__main__":
